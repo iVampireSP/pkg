@@ -5,10 +5,30 @@ import (
 	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
+type JwtStruct struct {
+	Iss    string      `json:"iss"`
+	Iat    int         `json:"iat"`
+	Exp    int         `json:"exp"`
+	Nbf    int         `json:"nbf"`
+	Jti    string      `json:"jti"`
+	Sub    string      `json:"sub"`
+	Prv    string      `json:"prv"`
+	TeamId interface{} `json:"team_id"`
+	User   struct {
+		Id                 int         `json:"id"`
+		Uuid               string      `json:"uuid"`
+		Name               string      `json:"name"`
+		Email              string      `json:"email"`
+		EmailVerifiedAt    time.Time   `json:"email_verified_at"`
+		RealNameVerifiedAt interface{} `json:"real_name_verified_at"`
+	} `json:"user"`
+}
+
 // JwtUser 从 JWT 中获取用户信息。此函数只需要负责获取用户信息，不需要负责验证 JWT 的有效性。验证有效性在网关中完成。
-func (GinMiddleware) JwtUser() gin.HandlerFunc {
+func JwtUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userInfo := c.Request.Header.Get("X-Jwt-Payload")
 
@@ -32,9 +52,9 @@ func (GinMiddleware) JwtUser() gin.HandlerFunc {
 			return
 		}
 
-		var jwtUser = map[string]interface{}{}
+		var structJwt = &JwtStruct{}
+		err = sonic.Unmarshal(userInfoByte, structJwt)
 
-		err = sonic.Unmarshal(userInfoByte, &jwtUser)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"message": "我们无法传递您的信息，请稍后再试。" + err.Error(),
@@ -43,11 +63,13 @@ func (GinMiddleware) JwtUser() gin.HandlerFunc {
 			return
 		}
 
-		for k, v := range jwtUser {
-			c.Set("auth."+k, v)
-		}
+		c.Set("auth", structJwt)
 
-		// 在之后，获取用户信息就用 c.Get("auth.user") 即可。
+		//  var h, _ = c.Get("auth")
+		//
+		//	user := h.(*utils.JwtStruct)
+		//	fmt.Println(user)
+		//	return
 		c.Next()
 	}
 }
