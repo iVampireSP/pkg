@@ -18,7 +18,7 @@ type JwtStruct struct {
 	Prv    string      `json:"prv"`
 	TeamId interface{} `json:"team_id"`
 	User   struct {
-		Id                 int         `json:"id"`
+		Id                 uint         `json:"id"`
 		Uuid               string      `json:"uuid"`
 		Name               string      `json:"name"`
 		Email              string      `json:"email"`
