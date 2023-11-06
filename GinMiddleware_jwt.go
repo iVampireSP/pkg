@@ -28,7 +28,7 @@ type JwtStruct struct {
 }
 
 // JwtUser 从 JWT 中获取用户信息。此函数只需要负责获取用户信息，不需要负责验证 JWT 的有效性。验证有效性在网关中完成。
-func JwtUser() gin.HandlerFunc {
+func (GinMiddlewareStruct) JwtUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userInfo := c.Request.Header.Get("X-Jwt-Payload")
 
