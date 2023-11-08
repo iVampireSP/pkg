@@ -12,6 +12,7 @@ var Utils utilsInterface = UtilsStruct{}
 
 type GinMiddlewareInterface interface {
 	JwtUser() gin.HandlerFunc
+	AllowAllCors() gin.HandlerFunc
 }
 type GinMiddlewareStruct struct{}
 

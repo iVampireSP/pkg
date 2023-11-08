@@ -5,8 +5,12 @@ import (
 	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/gin-gonic/gin"
+	"os"
+	"strings"
 	"time"
 )
+
+var appDebug = os.Getenv("DEBUG") == "true"
 
 type JwtStruct struct {
 	Iss    string      `json:"iss"`
@@ -18,7 +22,7 @@ type JwtStruct struct {
 	Prv    string      `json:"prv"`
 	TeamId interface{} `json:"team_id"`
 	User   struct {
-		Id                 uint         `json:"id"`
+		Id                 uint        `json:"id"`
 		Uuid               string      `json:"uuid"`
 		Name               string      `json:"name"`
 		Email              string      `json:"email"`
@@ -28,17 +32,56 @@ type JwtStruct struct {
 }
 
 // JwtUser 从 JWT 中获取用户信息。此函数只需要负责获取用户信息，不需要负责验证 JWT 的有效性。验证有效性在网关中完成。
-func (GinMiddlewareStruct) JwtUser() gin.HandlerFunc {
+func JwtUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userInfo := c.Request.Header.Get("X-Jwt-Payload")
 
-		// 检测有无 X-Jwt-Payload
-		if userInfo == "" {
-			c.JSON(401, gin.H{
-				"message": "无法认证用户。",
-			})
-			c.Abort()
-			return
+		var userInfo = ""
+		// 检测 env 的 debug 是否为 true
+		if appDebug {
+			// 从 Authorization 中获取用户信息
+			// 分割 bearer
+			auth := c.Request.Header.Get("Authorization")
+			if auth == "" {
+				c.JSON(401, gin.H{
+					"message": "缺少 JWT 令牌。",
+				})
+				c.Abort()
+				return
+			}
+
+			authSplit := strings.Split(auth, " ")
+			if len(authSplit) != 2 {
+				c.JSON(401, gin.H{
+					"message": "无效的 JWT 令牌。",
+				})
+				c.Abort()
+				return
+			}
+
+			// 接着取分割 payload
+			payloadSplit := strings.Split(authSplit[1], ".")
+			if len(payloadSplit) != 3 {
+				c.JSON(401, gin.H{
+					"message": "令牌格式不正确。",
+				})
+				c.Abort()
+				return
+			}
+
+			// 取中间
+			userInfo = payloadSplit[1]
+		} else {
+			userInfo = c.Request.Header.Get("X-Jwt-Payload")
+
+			// 检测有无 X-Jwt-Payload
+			if userInfo == "" {
+				c.JSON(401, gin.H{
+					"message": "无法认证用户。",
+				})
+				c.Abort()
+				return
+			}
+
 		}
 
 		// base64 decode
