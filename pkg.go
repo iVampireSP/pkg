@@ -5,6 +5,7 @@ import "github.com/gin-gonic/gin"
 type utilsInterface interface {
 	PasswordHash(pwd string) (string, error)
 	PasswordVerify(pwd string, hash string) bool
+	GetAuth(c *gin.Context) (*JwtStruct, bool)
 }
 type UtilsStruct struct{}
 
