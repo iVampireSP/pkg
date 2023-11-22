@@ -19,7 +19,7 @@ type PaginationParams struct {
 	Sort  string
 }
 
-func (UtilsStruct) NewPaginator(db *gorm.DB, resources interface{}, params PaginationParams) *Paginator {
+func NewPaginator(db *gorm.DB, resources interface{}, params PaginationParams) *Paginator {
 	return &Paginator{
 		DB:        db,
 		Page:      params.Page,
