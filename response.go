@@ -1,10 +1,10 @@
-package response
+package main
 
-type Error struct {
+type ResponseError struct {
 	Message string
 }
 
-type Paginated struct {
+type ResponsePaginated struct {
 	Data  interface{} `json:"Data"`
 	Total int64       `json:"Total"`
 	Page  int         `json:"Page"`
