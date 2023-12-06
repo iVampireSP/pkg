@@ -20,7 +20,7 @@ type PaginationParams struct {
 }
 
 func NewPaginator(db *gorm.DB, resources interface{}, params PaginationParams) *Paginator {
-	if params.Page == 0 {
+	if params.Page <= 0 {
 		params.Page = 1
 	}
 
@@ -44,6 +44,8 @@ func (p *Paginator) Paginate() error {
 	if err := query.Count(&p.Total).Error; err != nil {
 		return err
 	}
+
+	p.Total = (p.Total + int64(p.Limit) - 1) / int64(p.Limit)
 
 	if err := query.Limit(p.Limit).Offset(offset).Find(p.Resources).Error; err != nil {
 		return err
