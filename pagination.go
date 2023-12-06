@@ -20,6 +20,10 @@ type PaginationParams struct {
 }
 
 func NewPaginator(db *gorm.DB, resources interface{}, params PaginationParams) *Paginator {
+	if params.Page == 0 {
+		params.Page = 1
+	}
+
 	return &Paginator{
 		DB:        db,
 		Page:      params.Page,
